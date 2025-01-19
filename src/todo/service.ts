@@ -1,5 +1,6 @@
 import { todo } from '@/db/schema';
 import { ErrorFactory } from '@/errors';
+import { AppError } from '@/errors/app-error';
 import { Result, err, ok } from '@/lib/result';
 import { TodoRepository } from '@/todo/repository';
 
@@ -9,7 +10,11 @@ export class TodoService {
 	async createTodo(content: string): Promise<Result<typeof todo.$inferSelect, Error>> {
 		const createdTodo = await this.todoRepository.createTodo(content);
 		if (!createdTodo.ok) {
-			return err(createdTodo.error);
+			if (createdTodo.error instanceof AppError) {
+				return err(createdTodo.error);
+			}
+			console.log(createdTodo.error); // add logging for unknown errors
+			return err(ErrorFactory.internalError('unknown error'));
 		}
 
 		if (!createdTodo.value) {
@@ -22,7 +27,11 @@ export class TodoService {
 	async getTodos(): Promise<Result<(typeof todo.$inferSelect)[], Error>> {
 		const todos = await this.todoRepository.getTodos();
 		if (!todos.ok) {
-			return err(todos.error);
+			if (todos.error instanceof AppError) {
+				return err(todos.error);
+			}
+			console.log(todos.error);
+			return err(ErrorFactory.internalError('unknown error'));
 		}
 
 		return ok(todos.value);

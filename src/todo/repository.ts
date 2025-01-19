@@ -1,10 +1,11 @@
 import { db } from '@/db';
 import { todo } from '@/db/schema';
 import { ErrorFactory } from '@/errors';
+import { InternalError } from '@/errors/internal-error';
 import { Result, err, ok } from '@/lib/result';
 
 export class TodoRepository {
-	async createTodo(content: string): Promise<Result<typeof todo.$inferSelect | undefined, Error>> {
+	async createTodo(content: string): Promise<Result<typeof todo.$inferSelect | undefined, Error | InternalError>> {
 		try {
 			const [result] = await db.insert(todo).values({ content }).returning();
 

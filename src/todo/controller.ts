@@ -3,6 +3,7 @@ import { StatusCodes } from 'http-status-codes';
 
 import { ApiResponse } from '@/http/api-response';
 import handleApiResponse from '@/http/handle-api-response';
+import { safe } from '@/lib/safe';
 import { TodoService } from '@/todo/service';
 
 export class TodoController {
@@ -11,7 +12,19 @@ export class TodoController {
 	createTodo = async (req: express.Request, res: express.Response) => {
 		const { content }: { content: string } = req.body;
 
-		const todo = await this.todoService.createTodo(content);
+		const parsedContent = safe(() => JSON.parse(content));
+
+		if (!parsedContent.ok) {
+			const response = ApiResponse.failure({
+				message: 'failed to parse content',
+				statusCode: StatusCodes.BAD_REQUEST,
+				error: parsedContent.error,
+			});
+			handleApiResponse(res, response);
+			return;
+		}
+
+		const todo = await this.todoService.createTodo(parsedContent.value);
 		if (!todo.ok) {
 			const response = ApiResponse.failure({
 				message: 'failed to create todo',

@@ -1,5 +1,8 @@
 import express from 'express';
+import { StatusCodes } from 'http-status-codes';
 
+import { ApiResponse } from '@/http/api-response';
+import handleApiResponse from '@/http/handle-api-response';
 import { TodoService } from '@/todo/service';
 
 export class TodoController {
@@ -10,22 +13,42 @@ export class TodoController {
 
 		const todo = await this.todoService.createTodo(content);
 		if (!todo.ok) {
-			res.status(500).json({ error: todo.error.message });
+			const response = ApiResponse.failure({
+				message: 'failed to create todo',
+				statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+				error: todo.error,
+			});
+			handleApiResponse(res, response);
 			return;
 		}
 
-		res.status(201).json({ todo: todo.value });
+		const response = ApiResponse.success({
+			message: 'todo created successfully',
+			statusCode: StatusCodes.CREATED,
+			data: todo.value,
+		});
+		handleApiResponse(res, response);
 		return;
 	};
 
 	getTodos = async (_req: express.Request, res: express.Response) => {
 		const todos = await this.todoService.getTodos();
 		if (!todos.ok) {
-			res.status(500).json({ error: todos.error.message });
+			const response = ApiResponse.failure({
+				message: 'failed to get todos',
+				statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+				error: todos.error,
+			});
+			handleApiResponse(res, response);
 			return;
 		}
 
-		res.status(200).json({ todos: todos.value });
+		const response = ApiResponse.success({
+			message: 'todos fetched successfully',
+			statusCode: StatusCodes.OK,
+			data: todos.value,
+		});
+		handleApiResponse(res, response);
 		return;
 	};
 }

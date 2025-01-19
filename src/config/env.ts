@@ -18,4 +18,4 @@ if (!parsedEnv.success) {
 	process.exit(1);
 }
 
-export default parsedEnv.data;
+export const env = parsedEnv.data;

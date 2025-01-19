@@ -1,1 +1,1 @@
-export { default as todo } from '@/db/schema/todo';
+export { todo } from '@/db/schema/todo';
